@@ -16,7 +16,7 @@ struct Client {
 
   Options o;
 
-  folly::coro::Task<void> Pressure(std::function<void()> &&cob);
+  folly::coro::Task<void> Pressure(folly::Func cob);
 
   std::atomic_bool stop{false};
 };
