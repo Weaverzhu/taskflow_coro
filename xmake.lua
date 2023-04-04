@@ -1,6 +1,9 @@
 add_rules("mode.debug", "mode.release")
-add_requires("folly", "benchmark", "gtest")
 set_languages("c++20")
+add_requires("folly")
+add_requires("benchmark", "gtest")
+
+add_cxflags("-g")
 
 target("coroutine-folly")
     set_kind("library")
@@ -15,6 +18,7 @@ target("test")
     add_packages("folly", "benchmark", "gtest")
     add_includedirs(".")
     add_deps("coroutine-folly")
+    add_ldflags("-lpthread")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

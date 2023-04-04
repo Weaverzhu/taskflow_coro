@@ -21,6 +21,16 @@ struct Metrics {
         std::chrono::system_clock::now().time_since_epoch()));
   }
 
+  static Metrics &instance() {
+    static Metrics ins;
+    return ins;
+  }
+
+  void dump(size_t level) {
+    printf("throughput: %d, pct99 latency: %dms\n", (int)qps.rate(level),
+           (int)latency.getPercentileEstimate(99, level) / 1000);
+  }
+
   TP base;
 
   folly::TimeseriesHistogram<int64_t> qps, latency;
