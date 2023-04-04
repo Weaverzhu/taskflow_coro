@@ -34,7 +34,7 @@ void gemm(int n) {
   }
 }
 
-void Work::sync() {
+void Work::sync(folly::Executor *ex) {
   if (rand() % 2) {
     gemm(20);
   } else {
@@ -42,7 +42,7 @@ void Work::sync() {
   }
 }
 
-folly::coro::Task<void> Work::coro() {
+folly::coro::Task<void> Work::coro(folly::Executor *ex) {
   if (rand() % 2) {
     gemm(20);
   } else {
@@ -54,16 +54,16 @@ static int n = 100;
 
 std::atomic_int64_t count{0};
 
-void FanoutWork::sync() {
+void FanoutWork::sync(folly::Executor *ex) {
   auto start = std::chrono::system_clock::now();
   std::vector<folly::Future<int>> futs;
   futs.reserve(n);
   for (int i = 0; i < n; ++i) {
     folly::Promise<int> p;
     futs.emplace_back(p.getFuture());
-    folly::getGlobalCPUExecutor()->add([p = std::move(p)]() mutable {
+    ex->add([p = std::move(p), ex]() mutable {
       Work w;
-      w.sync();
+      w.sync(ex);
       p.setValue(0);
     });
   }
@@ -77,17 +77,16 @@ void FanoutWork::sync() {
   ++count;
 }
 
-folly::coro::Task<void> FanoutWork::coro() {
+folly::coro::Task<void> FanoutWork::coro(folly::Executor *ex) {
   auto start = std::chrono::system_clock::now();
   std::vector<folly::coro::TaskWithExecutor<int>> coros;
   coros.reserve(n);
   for (int i = 0; i < n; ++i) {
-    coros.emplace_back(folly::coro::co_invoke([]() -> folly::coro::Task<int> {
+    coros.emplace_back(folly::coro::co_invoke([ex]() -> folly::coro::Task<int> {
                          Work w;
-                         co_await w.coro();
-
+                         co_await w.coro(ex);
                          co_return 0;
-                       }).scheduleOn(folly::getGlobalCPUExecutor()));
+                       }).scheduleOn(ex));
   }
   co_await folly::coro::collectAllRange(std::move(coros));
 

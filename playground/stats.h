@@ -21,14 +21,19 @@ struct Metrics {
         std::chrono::system_clock::now().time_since_epoch()));
   }
 
+  void clear() {
+    qps.clear();
+    latency.clear();
+  }
+
   static Metrics &instance() {
     static Metrics ins;
     return ins;
   }
 
   void dump(size_t level) {
-    printf("throughput: %d, pct99 latency: %dms\n", (int)qps.rate(level),
-           (int)latency.getPercentileEstimate(99, level) / 1000);
+    printf("throughput: %d, pct99 latency: %dus\n", (int)qps.rate(level),
+           (int)latency.getPercentileEstimate(99, level));
   }
 
   TP base;
