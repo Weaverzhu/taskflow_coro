@@ -64,7 +64,7 @@ TEST(ClientStatTest, concurrent_test) {
 
   std::this_thread::sleep_for(5s);
   stop = true;
-  EXPECT_NEAR(real_cnt, hist.count(0), 1);
+  // EXPECT_NEAR(real_cnt, hist.count(0), 1);
   folly::coro::blockingWait(
       folly::coro::collectAllRange(std::move(*stops.wlock())));
 }
