@@ -8,13 +8,19 @@ using namespace std::chrono;
 using namespace folly;
 using namespace std::chrono_literals;
 
-static const seconds kDurations[] = {5s, 30s, 300s};
+static const seconds kDurations[] = {5s, 30s, 300s, 3000s};
+static const size_t kNumShards = 10;
 
 Metrics::Metrics()
     : base(system_clock::now()),
-      qps(10, 1, 2, folly::MultiLevelTimeSeries<int64_t>(10, 3, kDurations)),
-      latency(10, 0, 1000000,
-              folly::MultiLevelTimeSeries<int64_t>(10, 3, kDurations)) {}
+      qps(kNumShards, 1, 2,
+          folly::MultiLevelTimeSeries<int64_t>(
+              kNumShards, sizeof(kDurations) / sizeof(kDurations[0]),
+              kDurations)),
+      latency(kNumShards, 0, 1000000,
+              folly::MultiLevelTimeSeries<int64_t>(
+                  kNumShards, sizeof(kDurations) / sizeof(kDurations[0]),
+                  kDurations)) {}
 
 void Metrics::summary(Metrics::Clock &&lat) {
   auto n = duration_cast<seconds>(system_clock::now().time_since_epoch());
