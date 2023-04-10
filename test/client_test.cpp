@@ -1,10 +1,12 @@
 #include "playground/client.h"
 #include "playground/stats.h"
 
+#include <atomic>
 #include <folly/experimental/coro/BlockingWait.h>
 #include <gtest/gtest.h>
 
 #include <random>
+#include <thread>
 namespace playground {
 
 using namespace std::chrono_literals;
@@ -36,7 +38,8 @@ TEST(ClientStatTest, test0) {
 
   auto r = metrics.report();
   EXPECT_NEAR(5, r.qps, 1);
-  printf("%d %d\n", (int)r.avg.count(), (int)r.pct99.count());
+  printf("%d %d %d\n", (int)metrics.qps.rate(0), (int)r.avg.count(),
+         (int)r.pct99.count());
 }
 
 TEST(ClientStatTest, concurrent_test) {
@@ -67,6 +70,26 @@ TEST(ClientStatTest, concurrent_test) {
   // EXPECT_NEAR(real_cnt, hist.count(0), 1);
   folly::coro::blockingWait(
       folly::coro::collectAllRange(std::move(*stops.wlock())));
+}
+
+TEST(ClientTest, qps) {
+  Client client(Client::Options{.num_workers = 1, .qps = 100});
+  Metrics metrics;
+  std::atomic_int cnt{0};
+  auto fut =
+      client
+          .Pressure([&]() {
+            cnt += 1;
+            folly::getGlobalCPUExecutor()->add([&] { metrics.summary(0s); });
+          })
+          .scheduleOn(folly::getGlobalCPUExecutor())
+          .start();
+
+  std::this_thread::sleep_for(5s);
+  client.stop = true;
+  std::move(fut).get();
+  EXPECT_NEAR(100, metrics.qps.rate(0), 50);
+  printf("%d\n", cnt.load());
 }
 
 } // namespace playground
