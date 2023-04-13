@@ -1,0 +1,7 @@
+FROM taygetus/xmake:latest
+
+RUN apt -y install unzip
+RUN ~/.local/bin/xrepo install -y folly taskflow libunwind benchmark gtest
+
+ADD . .
+RUN ~/.local/bin/xmake -y

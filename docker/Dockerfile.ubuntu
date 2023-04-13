@@ -1,0 +1,18 @@
+FROM ubuntu:22.04
+
+RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list \
+    && sed -i '/^deb.*security.ubuntu.com/d' /etc/apt/sources.list
+
+RUN apt update && apt -y install unzip curl wget ca-certificates
+RUN wget https://xmake.io/shget.text -O - | bash
+ENV XMAKE_ROOT=y
+
+ARG http_proxy
+ARG https_proxy
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+
+RUN ~/.local/bin/xrepo install -y folly taskflow libunwind benchmark gtest
+
+ADD . .
+RUN ~/.local/bin/xmake -y

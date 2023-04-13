@@ -1,0 +1,16 @@
+# Xmake cache
+.xmake/
+build/
+
+# MacOS Cache
+.DS_Store
+
+
+compile_commands.json
+.vscode
+.cache
+
+/docker
+*folly*
+build-folly/
+taskflow/
