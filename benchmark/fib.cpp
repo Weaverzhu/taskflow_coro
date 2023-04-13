@@ -7,7 +7,7 @@
 uint32_t cpuTask() {
   std::string s(200, 'x');
   uint32_t ret = 0;
-  for (int i = 0; i < 200; ++i) {
+  for (int i = 0; i < 500; ++i) {
     ret += std::hash<std::string>{}(s);
   }
   return ret;
@@ -42,15 +42,15 @@ void BM_fib_taskflow(benchmark::State &state) {
   }
 }
 
-BENCHMARK(BM_fib_taskflow)->Arg(15)->Arg(17)->Arg(20);
+BENCHMARK(BM_fib_taskflow)->Arg(15)->Arg(17)->Arg(20)->Arg(22);
 
 folly::coro::Task<int> fib_coro(int n) {
   if (n <= 2) {
     co_return n;
   }
   auto [res1, res2] = co_await folly::coro::collectAll(
-      fib_coro(n - 1).scheduleOn(folly::getGlobalCPUExecutor()).start(),
-      fib_coro(n - 2).scheduleOn(folly::getGlobalCPUExecutor()).start());
+      fib_coro(n - 1).scheduleOn(folly::getGlobalCPUExecutor()),
+      fib_coro(n - 2).scheduleOn(folly::getGlobalCPUExecutor()));
   cpuTask();
   co_return res1 + res2;
 }
@@ -65,4 +65,4 @@ void BM_fib_coro(benchmark::State &state) {
   }
 }
 
-BENCHMARK(BM_fib_coro)->Arg(15)->Arg(17)->Arg(20);
+BENCHMARK(BM_fib_coro)->Arg(15)->Arg(17)->Arg(20)->Arg(22);

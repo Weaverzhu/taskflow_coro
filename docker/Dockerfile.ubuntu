@@ -16,3 +16,4 @@ RUN ~/.local/bin/xrepo install -y folly taskflow libunwind benchmark gtest
 
 ADD . .
 RUN ~/.local/bin/xmake -y
+ENTRYPOINT ["/root/.local/bin/xmake", "run", "benchmark"]
