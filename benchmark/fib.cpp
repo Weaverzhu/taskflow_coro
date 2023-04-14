@@ -52,7 +52,7 @@ folly::coro::Task<int> fib_coro(int n) {
   auto [res1, res2] =
       co_await folly::coro::collectAll(
           fib_coro(n - 1).scheduleOn(folly::getGlobalCPUExecutor()),
-          fib_coro(n - 2).scheduleOn(folly::getGlobalCPUExecutor()))
+          fib_coro(n - 2))
           .scheduleOn(&folly::InlineExecutor::instance());
   cpuTask();
   co_return res1 + res2;
@@ -74,12 +74,12 @@ BENCHMARK(BM_fib_coro)->Arg(15)->Arg(17)->Arg(20)->Arg(22);
 -------------------------------------------------------------
 Benchmark                   Time             CPU   Iterations
 -------------------------------------------------------------
-BM_fib_taskflow/15     941649 ns        49392 ns        10000
-BM_fib_taskflow/17    2216373 ns       122430 ns         5643
-BM_fib_taskflow/20    8633316 ns       509577 ns         1358
-BM_fib_taskflow/22   22272463 ns      1485570 ns          494
-BM_fib_coro/15         916313 ns         2444 ns        10000
-BM_fib_coro/17        2258221 ns         2580 ns        10000
-BM_fib_coro/20        9266028 ns         3183 ns         1000
-BM_fib_coro/22       24349100 ns         5430 ns         1000
+BM_fib_taskflow/15     938273 ns        49444 ns        10000
+BM_fib_taskflow/17    2214607 ns       118198 ns         5890
+BM_fib_taskflow/20    8663702 ns       518081 ns         1000
+BM_fib_taskflow/22   22067101 ns      1444260 ns          487
+BM_fib_coro/15         835111 ns         2351 ns        10000
+BM_fib_coro/17        2015837 ns         2507 ns        10000
+BM_fib_coro/20        8212625 ns         2715 ns         1000
+BM_fib_coro/22       21384419 ns         4053 ns         1000
 */
