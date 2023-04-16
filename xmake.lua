@@ -5,7 +5,7 @@ add_requires("benchmark", "gtest")
 
 add_cxflags("-g")
 
-target("coroutine-folly")
+target("playground")
     set_kind("library")
     add_files("playground/*.cpp")
     add_packages("folly")
@@ -16,10 +16,10 @@ target("test")
     add_files("playground/*.cpp")
     add_files("test/*.cpp")
     add_files("test/taskflow/*.cpp")
+    add_files("test/explicit_test/*.cpp")
     add_packages("folly", "benchmark", "gtest")
     add_includedirs(".")
-    add_deps("coroutine-folly")
-    add_ldflags("-lpthread")
+    add_deps("playground")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

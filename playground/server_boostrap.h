@@ -33,13 +33,16 @@ struct ServerBoostrap {
         co_await connectionTokens.co_wait();
       }
       auto transport = co_await serverSocket.accept();
-      folly::coro::co_invoke(handler, std::move(transport))
-          .scheduleOn(folly::getGlobalCPUExecutor())
-          .start()
-          .via(folly::getGlobalCPUExecutor())
-          .then([this](folly::Try<folly::Unit> &&unit) {
-            this->connectionTokens.signal();
-          });
+      auto fut = folly::coro::co_invoke(handler, std::move(transport))
+                     .scheduleOn(folly::getGlobalCPUExecutor())
+                     .start();
+      if (opt.maxConnections) {
+        fut = std::move(fut)
+                  .via(&folly::InlineExecutor::instance())
+                  .then([this](folly::Try<folly::Unit> &&unit) {
+                    this->connectionTokens.signal();
+                  });
+      }
     }
   }
 
