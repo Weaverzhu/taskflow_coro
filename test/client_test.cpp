@@ -21,12 +21,14 @@ TEST(ClientStatTest, test0) {
         std::uniform_int_distribution<int>(1, 100);
   };
   Context ctx;
+  std::atomic_int cnt{0};
   auto task = client
                   .Pressure([&]() mutable {
                     // static std::mutex m;
                     // std::lock_guard<std::mutex> lk(m);
                     metrics.summary(std::chrono::milliseconds(
                         ctx.distribution(ctx.engine)));
+                    cnt.fetch_add(1);
                   })
                   .scheduleOn(folly::getGlobalCPUExecutor())
                   .start();
@@ -38,8 +40,42 @@ TEST(ClientStatTest, test0) {
 
   auto r = metrics.report();
   EXPECT_NEAR(5, r.qps, 1);
-  printf("%d %d %d\n", (int)metrics.qps.rate(0), (int)r.avg.count(),
-         (int)r.pct99.count());
+  printf("%d %d %d %d, %d %d\n", (int)metrics.qps.rate(0),
+         (int)metrics.qps.rate(1), (int)metrics.qps.rate(2), (int)cnt.load(),
+         (int)r.avg.count(), (int)r.pct99.count());
+}
+
+TEST(ClientStatTest, test1) {
+  Client client(Client::Options{.num_workers = 10, .qps = 5000});
+  Metrics metrics;
+
+  struct Context {
+
+    std::default_random_engine engine;
+    std::uniform_int_distribution<int> distribution =
+        std::uniform_int_distribution<int>(1, 100);
+  };
+  Context ctx;
+  std::atomic_int cnt{0};
+  auto task = client
+                  .Pressure([&]() mutable {
+                    metrics.summary(std::chrono::milliseconds(
+                        ctx.distribution(ctx.engine)));
+                    cnt.fetch_add(1);
+                  })
+                  .scheduleOn(folly::getGlobalCPUExecutor())
+                  .start();
+
+  std::this_thread::sleep_for(std::chrono::seconds(10));
+  client.stop = true;
+
+  std::move(task).get();
+
+  auto r = metrics.report();
+  // EXPECT_NEAR(5, r.qps, 1);
+  printf("%d %d %d %d, %d %d\n", (int)metrics.qps.rate(0),
+         (int)metrics.qps.rate(1), (int)metrics.qps.rate(2), cnt.load(),
+         (int)r.avg.count(), (int)r.pct99.count());
 }
 
 TEST(ClientStatTest, concurrent_test) {
@@ -67,6 +103,7 @@ TEST(ClientStatTest, concurrent_test) {
 
   std::this_thread::sleep_for(5s);
   stop = true;
+  std::cout << real_cnt << ' ' << hist.count(0) << std::endl;
   // EXPECT_NEAR(real_cnt, hist.count(0), 1);
   folly::coro::blockingWait(
       folly::coro::collectAllRange(std::move(*stops.wlock())));

@@ -50,6 +50,6 @@ struct Metrics {
 
   TP base;
 
-  folly::TimeseriesHistogram<int64_t> qps, latency;
+  folly::TimeseriesHistogram<double> qps, latency;
 };
 } // namespace playground

@@ -23,54 +23,6 @@ coro::Task<void> foo() { co_await folly::futures::sleep(1s); }
 
 TEST(CoroTest, test0) { foo().semi().get(); }
 
-TEST(CoroTest, sync) {
-  count = 0;
-  Client c(
-      Client::Options{.num_workers = 1, .qps = (size_t)FLAGS_coro_test_qps});
-  FanoutWork w;
-  folly::CPUThreadPoolExecutor ex(FLAGS_coro_test_sync_threadpool_size);
-  auto fut =
-      c.Pressure([&] { ex.add([&] { w.sync(&ex); }); }).scheduleOn(&ex).start();
-  folly::coro::co_invoke([]() -> folly::coro::Task<void> {
-    co_await folly::futures::sleep(1s);
-    printf("%d\n", (int)count);
-    co_return;
-  })
-      .scheduleOn(&ex)
-      .start();
-  std::this_thread::sleep_for(
-      std::chrono::seconds(FLAGS_coro_test_duration_sec));
-  c.stop = true;
-  std::move(fut).get();
-  // ex.join();
-  Metrics::instance().dump(2);
-}
-
-TEST(CoroTest, coro) {
-  count = 0;
-  Client c(
-      Client::Options{.num_workers = 1, .qps = (size_t)FLAGS_coro_test_qps});
-  folly::CPUThreadPoolExecutor ex(std::thread::hardware_concurrency());
-  FanoutWork w;
-
-  auto fut = c.Pressure([&] { w.coro(&ex).scheduleOn(&ex).start(); })
-                 .scheduleOn(&ex)
-                 .start();
-  folly::coro::co_invoke([]() -> folly::coro::Task<void> {
-    co_await folly::futures::sleep(1s);
-    printf("%d\n", (int)count);
-    co_return;
-  })
-      .scheduleOn(&ex)
-      .start();
-  std::this_thread::sleep_for(
-      std::chrono::seconds(FLAGS_coro_test_duration_sec));
-  c.stop = true;
-  std::move(fut).get();
-  // ex.join();
-  Metrics::instance().dump(2);
-}
-
 struct DebugExecutor : public folly::CPUThreadPoolExecutor {
   std::atomic_size_t addCnt{0};
   bool printEveryAdd = false;
@@ -137,10 +89,8 @@ TEST(CoroAddTest, coro) {
     if (n <= 2) {
       co_return n;
     }
-    auto [res1, res2] =
-        co_await folly::coro::collectAll(fib_coro(n - 1).scheduleOn(&ex),
-                                         fib_coro(n - 2).scheduleOn(&ex))
-            .scheduleOn(&folly::InlineExecutor::instance());
+    auto [res1, res2] = co_await folly::coro::collectAll(
+        fib_coro(n - 1).scheduleOn(&ex), fib_coro(n - 2).scheduleOn(&ex));
 
     co_return res1 + res2;
   };

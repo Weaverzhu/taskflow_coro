@@ -12,12 +12,16 @@ struct Client {
     size_t qps;
   };
 
-  Client(Options &&opt = Options()) : o(std::move(opt)) {}
+  Client(Options &&opt = Options())
+      : o(std::move(opt)), ex(opt.num_workers), ps(opt.num_workers) {}
 
   Options o;
 
-  folly::coro::Task<void> Pressure(folly::Func cob);
+  folly::coro::Task<void> Pressure(std::function<void()>);
 
   std::atomic_bool stop{false};
+
+  folly::CPUThreadPoolExecutor ex;
+  std::vector<folly::Promise<folly::Unit>> ps;
 };
 } // namespace playground

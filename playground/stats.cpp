@@ -14,11 +14,11 @@ static const size_t kNumShards = 10;
 Metrics::Metrics()
     : base(system_clock::now()),
       qps(kNumShards, 1, 2,
-          folly::MultiLevelTimeSeries<int64_t>(
+          folly::MultiLevelTimeSeries<double>(
               kNumShards, sizeof(kDurations) / sizeof(kDurations[0]),
               kDurations)),
       latency(kNumShards, 0, 1000000,
-              folly::MultiLevelTimeSeries<int64_t>(
+              folly::MultiLevelTimeSeries<double>(
                   kNumShards, sizeof(kDurations) / sizeof(kDurations[0]),
                   kDurations)) {}
 
