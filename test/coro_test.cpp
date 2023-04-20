@@ -19,9 +19,23 @@ DEFINE_int32(coro_test_duration_sec, 5, "");
 DEFINE_int32(coro_test_qps, 100, "");
 DEFINE_int32(coro_test_sync_threadpool_size, 300, "");
 
-coro::Task<void> foo() { co_await folly::futures::sleep(1s); }
+coro::Task<void> foo() {
+  puts("before sleep");
+  co_await folly::futures::sleep(1s);
+  printf("after sleep ");
 
-TEST(CoroTest, test0) { foo().semi().get(); }
+  std::cout << std::this_thread::get_id() << std::endl;
+  co_return;
+}
+coro::Task<void> bar() {
+  puts("before foo * 2");
+  co_await folly::coro::collectAll(foo().semi(), foo().semi())
+      .scheduleOn(&folly::InlineExecutor::instance());
+  puts("after foo * 2");
+
+  std::cout << std::this_thread::get_id() << std::endl;
+  co_return;
+}
 
 struct DebugExecutor : public folly::CPUThreadPoolExecutor {
   std::atomic_size_t addCnt{0};
@@ -37,6 +51,24 @@ struct DebugExecutor : public folly::CPUThreadPoolExecutor {
     folly::CPUThreadPoolExecutor::add(std::move(func));
   }
 };
+
+TEST(CoroTest, test0) { foo().semi().get(); }
+
+TEST(CoroTest, test1) {
+  DebugExecutor ex(1);
+  ex.printEveryAdd = true;
+  folly::coro::co_invoke([&]() -> folly::coro::Task<void> {
+    std::cout << std::this_thread::get_id() << std::endl;
+    puts("before bar");
+    co_await bar();
+    puts("after bar");
+    co_return;
+  })
+      .scheduleOn(&ex)
+      .start()
+      .get();
+  printf("%lu\n", ex.addCnt.load());
+}
 
 namespace future {
 folly::Future<int> baz() {
