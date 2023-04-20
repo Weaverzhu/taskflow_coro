@@ -51,5 +51,6 @@ struct Metrics {
   TP base;
 
   folly::TimeseriesHistogram<double> qps, latency;
+  std::mutex summary_mutex;
 };
 } // namespace playground

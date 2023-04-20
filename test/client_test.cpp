@@ -33,16 +33,13 @@ TEST(ClientStatTest, test0) {
                   .scheduleOn(folly::getGlobalCPUExecutor())
                   .start();
 
-  std::this_thread::sleep_for(std::chrono::seconds(10));
+  std::this_thread::sleep_for(std::chrono::seconds(5));
   client.stop = true;
 
   std::move(task).get();
 
   auto r = metrics.report();
-  EXPECT_NEAR(5, r.qps, 1);
-  printf("%d %d %d %d, %d %d\n", (int)metrics.qps.rate(0),
-         (int)metrics.qps.rate(1), (int)metrics.qps.rate(2), (int)cnt.load(),
-         (int)r.avg.count(), (int)r.pct99.count());
+  EXPECT_NEAR(cnt.load() / 5, r.qps, 1);
 }
 
 TEST(ClientStatTest, test1) {
@@ -66,16 +63,13 @@ TEST(ClientStatTest, test1) {
                   .scheduleOn(folly::getGlobalCPUExecutor())
                   .start();
 
-  std::this_thread::sleep_for(std::chrono::seconds(10));
+  std::this_thread::sleep_for(std::chrono::seconds(5));
   client.stop = true;
 
   std::move(task).get();
 
   auto r = metrics.report();
-  // EXPECT_NEAR(5, r.qps, 1);
-  printf("%d %d %d %d, %d %d\n", (int)metrics.qps.rate(0),
-         (int)metrics.qps.rate(1), (int)metrics.qps.rate(2), cnt.load(),
-         (int)r.avg.count(), (int)r.pct99.count());
+  EXPECT_NEAR(cnt.load() / 5, r.qps, 1);
 }
 
 TEST(ClientStatTest, concurrent_test) {
