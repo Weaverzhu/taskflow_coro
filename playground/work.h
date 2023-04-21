@@ -19,6 +19,20 @@ struct Work {
   }
 };
 
+struct IOWork : public Work {
+  size_t sleep_ms;
+  IOWork(size_t sleep_ms, folly::Executor::KeepAlive<> ex)
+      : Work(ex), sleep_ms(sleep_ms) {}
+
+  void sync() override {
+    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
+  }
+
+  folly::coro::Task<void> coro() override {
+    co_await folly::coro::sleep(std::chrono::milliseconds(sleep_ms));
+  }
+};
+
 struct MemCPUWork : public Work {
   size_t n;
   MemCPUWork(size_t n, folly::Executor::KeepAlive<> ex) : Work(ex), n(n){};
@@ -63,6 +77,25 @@ struct FanoutWork : public Work {
 
     co_await folly::coro::collectAllRange(std::move(coros));
     co_return;
+  }
+};
+
+struct SequentialWork : public Work {
+  std::vector<std::shared_ptr<Work>> works;
+  SequentialWork(std::vector<std::shared_ptr<Work>> &&works,
+                 folly::Executor::KeepAlive<> ex)
+      : Work(ex), works(std::move(works)) {}
+
+  void sync() override {
+    for (auto &w : works) {
+      w->sync();
+    }
+  }
+
+  folly::coro::Task<void> coro() override {
+    for (auto &w : works) {
+      co_await w->coro();
+    }
   }
 };
 

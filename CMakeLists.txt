@@ -41,6 +41,7 @@ file(GLOB playground_srcs playground/*.cpp)
 file(GLOB test_srcs test/*.cpp
 test/taskflow/*.cpp
 test/executor/*.cpp
+test/coro/*.cpp
 )
 
 
