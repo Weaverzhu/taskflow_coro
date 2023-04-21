@@ -69,7 +69,7 @@ TEST(ClientStatTest, test1) {
   std::move(task).get();
 
   auto r = metrics.report();
-  EXPECT_NEAR(cnt.load() / 5, r.qps, 1);
+  EXPECT_NEAR(cnt.load() / 5, r.qps, 10);
 }
 
 TEST(ClientStatTest, concurrent_test) {

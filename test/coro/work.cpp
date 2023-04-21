@@ -41,32 +41,31 @@ compose_work(folly::Executor::KeepAlive<> ex = folly::getGlobalCPUExecutor(),
 // clang-format off
 /*
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (3836 ms total)
+[==========] 1 test from 1 test suite ran. (3699 ms total)
 [  PASSED  ] 1 test.
 
  Performance counter stats for 'xmake run test --gtest_filter=coro_work.sync1':
 
-         58,626.33 msec task-clock                #   15.018 CPUs utilized          
-         4,657,671      context-switches          #   79.447 K/sec                  
-           110,264      cpu-migrations            #    1.881 K/sec                  
-            26,123      page-faults               #  445.585 /sec                   
-   243,008,828,685      cycles                    #    4.145 GHz                      (62.51%)
-     3,504,540,935      stalled-cycles-frontend   #    1.44% frontend cycles idle     (62.76%)
-    12,217,609,496      stalled-cycles-backend    #    5.03% backend cycles idle      (63.03%)
-   101,760,148,890      instructions              #    0.42  insn per cycle         
-                                                  #    0.12  stalled cycles per insn  (63.02%)
-    18,805,789,014      branches                  #  320.774 M/sec                    (62.93%)
-       385,603,806      branch-misses             #    2.05% of all branches          (62.57%)
-    35,940,812,394      L1-dcache-loads           #  613.049 M/sec                    (62.31%)
-     2,609,811,853      L1-dcache-load-misses     #    7.26% of all L1-dcache accesses  (62.35%)
+         58,259.08 msec task-clock                #   15.463 CPUs utilized          
+         4,979,076      context-switches          #   85.464 K/sec                  
+            32,916      cpu-migrations            #  564.994 /sec                   
+            26,207      page-faults               #  449.835 /sec                   
+   240,334,646,317      cycles                    #    4.125 GHz                      (62.70%)
+     3,786,664,642      stalled-cycles-frontend   #    1.58% frontend cycles idle     (62.59%)
+    11,628,007,498      stalled-cycles-backend    #    4.84% backend cycles idle      (62.65%)
+    88,210,404,530      instructions              #    0.37  insn per cycle         
+                                                  #    0.13  stalled cycles per insn  (62.79%)
+    16,903,456,440      branches                  #  290.143 M/sec                    (62.96%)
+       381,161,479      branch-misses             #    2.25% of all branches          (62.67%)
+    30,010,244,892      L1-dcache-loads           #  515.117 M/sec                    (62.54%)
+     2,654,035,140      L1-dcache-load-misses     #    8.84% of all L1-dcache accesses  (62.51%)
    <not supported>      LLC-loads                                                   
    <not supported>      LLC-load-misses                                             
 
-       3.903706047 seconds time elapsed
+       3.767736047 seconds time elapsed
 
-      10.146664000 seconds user
-      48.468208000 seconds sys
-
+       7.288427000 seconds user
+      50.963515000 seconds sys
 */
 // clang-format on
 
@@ -79,32 +78,31 @@ TEST(coro_work, sync1) {
 // clang-format off
 /*
 [----------] Global test environment tear-down
-[==========] 1 test from 1 test suite ran. (3684 ms total)
+[==========] 1 test from 1 test suite ran. (2758 ms total)
 [  PASSED  ] 1 test.
 
  Performance counter stats for 'xmake run test --gtest_filter=coro_work.coro1':
 
-         40,584.19 msec task-clock                #   10.709 CPUs utilized          
-         3,502,792      context-switches          #   86.309 K/sec                  
-            28,912      cpu-migrations            #  712.396 /sec                   
-             7,036      page-faults               #  173.368 /sec                   
-   155,403,397,316      cycles                    #    3.829 GHz                      (62.51%)
-     2,681,060,827      stalled-cycles-frontend   #    1.73% frontend cycles idle     (62.04%)
-     7,345,562,231      stalled-cycles-backend    #    4.73% backend cycles idle      (62.48%)
-    74,192,495,785      instructions              #    0.48  insn per cycle         
-                                                  #    0.10  stalled cycles per insn  (62.53%)
-    13,308,013,070      branches                  #  327.911 M/sec                    (63.17%)
-       339,798,675      branch-misses             #    2.55% of all branches          (62.52%)
-    27,765,782,420      L1-dcache-loads           #  684.153 M/sec                    (62.52%)
-     1,603,714,327      L1-dcache-load-misses     #    5.78% of all L1-dcache accesses  (62.49%)
+         28,700.28 msec task-clock                #    9.977 CPUs utilized          
+         2,711,839      context-switches          #   94.488 K/sec                  
+            24,040      cpu-migrations            #  837.622 /sec                   
+             7,013      page-faults               #  244.353 /sec                   
+   108,050,706,724      cycles                    #    3.765 GHz                      (62.38%)
+     2,072,788,448      stalled-cycles-frontend   #    1.92% frontend cycles idle     (62.06%)
+     5,050,812,844      stalled-cycles-backend    #    4.67% backend cycles idle      (63.19%)
+    44,921,881,948      instructions              #    0.42  insn per cycle         
+                                                  #    0.11  stalled cycles per insn  (62.92%)
+     8,397,287,199      branches                  #  292.585 M/sec                    (62.85%)
+       254,965,431      branch-misses             #    3.04% of all branches          (62.21%)
+    16,113,117,976      L1-dcache-loads           #  561.427 M/sec                    (62.62%)
+     1,220,365,475      L1-dcache-load-misses     #    7.57% of all L1-dcache accesses  (62.17%)
    <not supported>      LLC-loads                                                   
    <not supported>      LLC-load-misses                                             
 
-       3.789579743 seconds time elapsed
+       2.876658572 seconds time elapsed
 
-       7.113134000 seconds user
-      33.095524000 seconds sys
-
+       3.677696000 seconds user
+      24.693447000 seconds sys
 */
 // clang-format on
 
